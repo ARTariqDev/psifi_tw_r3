@@ -135,7 +135,7 @@
         "clientNode": "mongo1",
         "mode": "collection",
         "collection": "earthquakes",
-        "operation": "updateOne",
+        "operation": "replaceOne",
         "output": "toArray",
         "maxTimeMS": "0",
         "handleDocId": false,
@@ -204,6 +204,77 @@
         "x": 1270,
         "y": 520,
         "wires": []
+            []
+        ]
+    },
+    {
+        "id": "http_in_api",
+        "type": "http in",
+        "z": "earthquake_tab",
+        "name": "",
+        "url": "/api/earthquakes",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 140,
+        "y": 260,
+        "wires": [
+            [
+                "mongo_read"
+            ]
+        ]
+    },
+    {
+        "id": "mongo_read",
+        "type": "mongodb4",
+        "z": "earthquake_tab",
+        "clientId": "mongo1",
+        "mode": "collection",
+        "collection": "earthquakes",
+        "operation": "find",
+        "output": "toArray",
+        "maxTimeMS": "0",
+        "query": "{}",
+        "sort": "{\"time\": -1}",
+        "limit": "1000",
+        "name": "Read Earthquakes",
+        "x": 360,
+        "y": 260,
+        "wires": [
+            [
+                "http_response"
+            ]
+        ]
+    },
+    {
+        "id": "http_response",
+        "type": "http response",
+        "z": "earthquake_tab",
+        "name": "",
+        "statusCode": "200",
+        "headers": {"content-type": "application/json"},
+        "x": 570,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "mongo1",
+        "type": "mongodb4-client",
+        "name": "MongoDB Atlas",
+        "protocol": "mongodb+srv",
+        "hostname": "",
+        "port": "",
+        "dbName": "",
+        "authSource": "",
+        "authMechanism": "DEFAULT",
+        "tls": false,
+        "tlsCAFile": "",
+        "tlsCertFile": "",
+        "tlsKeyFile": "",
+        "tlsVersion": "",
+        "uriTabActive": "tab-uri-uri",
+        "uri": "mongodb+srv://artariqdev_db_user:bzVAE4JSjAEPUN0g@psifi.mc6xmgg.mongodb.net/?appName=psifi",
+        "advanced": "{\"defaultDbName\":\"pakistan_earthquakes\"}"
     },
     {
         "id": "9b76fc73d14273e9",

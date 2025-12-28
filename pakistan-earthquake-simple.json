@@ -135,13 +135,13 @@
         "clientNode": "mongo1",
         "mode": "collection",
         "collection": "earthquakes",
-        "operation": "replaceOne",
+        "operation": "updateOne",
         "output": "toArray",
         "maxTimeMS": "0",
         "handleDocId": false,
         "name": "Save to MongoDB",
-        "x": 1230,
-        "y": 400,
+        "x": 1510,
+        "y": 240,
         "wires": [
             [
                 "ebfa5e8c28be9512"
@@ -201,83 +201,101 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1270,
-        "y": 520,
+        "x": 1180,
+        "y": 340,
         "wires": []
-            []
-        ]
     },
     {
-        "id": "http_in_api",
+        "id": "38bfdec3319b0c65",
         "type": "http in",
-        "z": "earthquake_tab",
-        "name": "",
-        "url": "/api/earthquakes",
+        "z": "ab603813bf5a0fc1",
+        "name": "Endpoint",
+        "url": "/api/allEarthquakes",
         "method": "get",
         "upload": false,
+        "skipBodyParsing": false,
         "swaggerDoc": "",
         "x": 140,
-        "y": 260,
+        "y": 500,
         "wires": [
             [
-                "mongo_read"
+                "2eea8282b79c738f"
             ]
         ]
     },
     {
-        "id": "mongo_read",
+        "id": "00e10234d4c8241d",
         "type": "mongodb4",
-        "z": "earthquake_tab",
-        "clientId": "mongo1",
+        "z": "ab603813bf5a0fc1",
+        "clientNode": "mongo1",
         "mode": "collection",
         "collection": "earthquakes",
         "operation": "find",
         "output": "toArray",
         "maxTimeMS": "0",
-        "query": "{}",
-        "sort": "{\"time\": -1}",
-        "limit": "1000",
-        "name": "Read Earthquakes",
-        "x": 360,
-        "y": 260,
+        "handleDocId": false,
+        "name": "MongoDB",
+        "x": 560,
+        "y": 500,
         "wires": [
             [
-                "http_response"
+                "4b07c11c05d7f669"
             ]
         ]
     },
     {
-        "id": "http_response",
+        "id": "ecf96da52a761424",
         "type": "http response",
-        "z": "earthquake_tab",
-        "name": "",
-        "statusCode": "200",
-        "headers": {"content-type": "application/json"},
-        "x": 570,
-        "y": 260,
+        "z": "ab603813bf5a0fc1",
+        "name": "Response",
+        "statusCode": "",
+        "headers": {},
+        "x": 1020,
+        "y": 500,
         "wires": []
     },
     {
-        "id": "mongo1",
-        "type": "mongodb4-client",
-        "name": "MongoDB Atlas",
-        "protocol": "mongodb+srv",
-        "hostname": "",
-        "port": "",
-        "dbName": "",
-        "authSource": "",
-        "authMechanism": "DEFAULT",
-        "tls": false,
-        "tlsCAFile": "",
-        "tlsCertFile": "",
-        "tlsKeyFile": "",
-        "tlsVersion": "",
-        "uriTabActive": "tab-uri-uri",
-        "uri": "mongodb+srv://artariqdev_db_user:bzVAE4JSjAEPUN0g@psifi.mc6xmgg.mongodb.net/?appName=psifi",
-        "advanced": "{\"defaultDbName\":\"pakistan_earthquakes\"}"
+        "id": "4b07c11c05d7f669",
+        "type": "function",
+        "z": "ab603813bf5a0fc1",
+        "name": "format response",
+        "func": "   msg.payload = {\n       status: 'success',\n       count: msg.payload.length,\n       data: msg.payload\n   };\n   msg.statusCode = 200;\n   msg.headers = {\n       'Content-Type': 'application/json',\n       'Access-Control-Allow-Origin': '*'\n   };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 500,
+        "wires": [
+            [
+                "ecf96da52a761424"
+            ]
+        ]
     },
     {
-        "id": "9b76fc73d14273e9",
+        "id": "2eea8282b79c738f",
+        "type": "function",
+        "z": "ab603813bf5a0fc1",
+        "name": "request",
+        "func": "msg.payload = [\n    {}\n]\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 500,
+        "wires": [
+            [
+                "00e10234d4c8241d"
+            ]
+        ]
+    },
+    {
+        "id": "b8a4020bef3519fd",
         "type": "global-config",
         "env": [],
         "modules": {

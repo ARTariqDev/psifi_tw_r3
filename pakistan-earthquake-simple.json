@@ -1,123 +1,18 @@
 [
     {
-        "id": "earthquake_tab",
+        "id": "9592391b770d2332",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ab603813bf5a0fc1",
         "type": "tab",
         "label": "Pakistan Earthquakes",
         "disabled": false,
         "info": ""
-    },
-    {
-        "id": "inject1",
-        "type": "inject",
-        "z": "earthquake_tab",
-        "name": "Fetch Data",
-        "props": [
-            {
-                "p": "payload"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 120,
-        "y": 100,
-        "wires": [
-            [
-                "http1"
-            ]
-        ]
-    },
-    {
-        "id": "http1",
-        "type": "http request",
-        "z": "earthquake_tab",
-        "name": "USGS API",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2015-01-01&endtime=2025-12-28&minlatitude=23.5&maxlatitude=37.5&minlongitude=60.5&maxlongitude=77.5&minmagnitude=6.0",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "x": 300,
-        "y": 100,
-        "wires": [
-            [
-                "function1",
-                "debug1"
-            ]
-        ]
-    },
-    {
-        "id": "function1",
-        "type": "function",
-        "z": "earthquake_tab",
-        "name": "Transform Data",
-        "func": "const earthquakes = msg.payload.features || [];\nconst transformed = [];\n\nfor (let eq of earthquakes) {\n    transformed.push({\n        _id: eq.id,\n        magnitude: eq.properties.mag,\n        location: eq.properties.place,\n        time: new Date(eq.properties.time),\n        depth_km: eq.geometry.coordinates[2],\n        latitude: eq.geometry.coordinates[1],\n        longitude: eq.geometry.coordinates[0],\n        url: eq.properties.url\n    });\n}\n\nmsg.payload = transformed;\nreturn msg;",
-        "outputs": 1,
-        "x": 490,
-        "y": 100,
-        "wires": [
-            [
-                "split1"
-            ]
-        ]
-    },
-    {
-        "id": "split1",
-        "type": "split",
-        "z": "earthquake_tab",
-        "name": "",
-        "splt": "\\n",
-        "spltType": "str",
-        "arraySplt": 1,
-        "arraySpltType": "len",
-        "stream": false,
-        "addname": "",
-        "x": 670,
-        "y": 100,
-        "wires": [
-            [
-                "373c6fc535fccccb"
-            ]
-        ]
-    },
-    {
-        "id": "debug1",
-        "type": "debug",
-        "z": "earthquake_tab",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "x": 490,
-        "y": 160,
-        "wires": []
-    },
-    {
-        "id": "373c6fc535fccccb",
-        "type": "mongodb4",
-        "z": "earthquake_tab",
-        "clientId": "mongo1",
-        "mode": "collection",
-        "collection": "earthquakes",
-        "operation": "updateOne",
-        "output": "toArray",
-        "maxTimeMS": "0",
-        "upsert": true,
-        "query": "{\"_id\": \"{{payload._id}}\"}",
-        "name": "Save to MongoDB",
-        "x": 840,
-        "y": 100,
-        "wires": [
-            []
-        ]
     },
     {
         "id": "mongo1",
@@ -126,20 +21,192 @@
         "protocol": "mongodb+srv",
         "hostname": "",
         "port": "",
-        "dbName": "",
+        "dbName": "pakistan_earthquakes",
+        "appName": "",
         "authSource": "",
         "authMechanism": "DEFAULT",
         "tls": false,
         "tlsCAFile": "",
-        "tlsCertFile": "",
-        "tlsKeyFile": "",
-        "tlsVersion": "",
-        "uriTabActive": "tab-uri-uri",
-        "uri": "mongodb+srv://artariqdev_db_user:bzVAE4JSjAEPUN0g@psifi.mc6xmgg.mongodb.net/?appName=psifi",
-        "advanced": "{\"defaultDbName\":\"pakistan_earthquakes\"}"
+        "tlsCertificateKeyFile": "",
+        "tlsInsecure": false,
+        "connectTimeoutMS": "",
+        "socketTimeoutMS": "",
+        "minPoolSize": "",
+        "maxPoolSize": "",
+        "maxIdleTimeMS": "",
+        "uri": "mongodb+srv://artariqdev_db_user:bzVAE4JSjAEPUN0g@psifi.mc6xmgg.mongodb.net/pakistan_earthquakes?appName=psifi",
+        "advanced": "{}",
+        "uriTabActive": "tab-uri-advanced"
     },
     {
-        "id": "6af85437a26defab",
+        "id": "cdf0491b031b88e1",
+        "type": "inject",
+        "z": "ab603813bf5a0fc1",
+        "name": "Fetch Data",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 240,
+        "wires": [
+            [
+                "dd16097230f5f163"
+            ]
+        ]
+    },
+    {
+        "id": "74bc0a26648c8dab",
+        "type": "http request",
+        "z": "ab603813bf5a0fc1",
+        "name": "USGS API",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "query",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 550,
+        "y": 240,
+        "wires": [
+            [
+                "08a6a6ede1133f9b",
+                "ebfa5e8c28be9512"
+            ]
+        ]
+    },
+    {
+        "id": "08a6a6ede1133f9b",
+        "type": "function",
+        "z": "ab603813bf5a0fc1",
+        "name": "Transform Data",
+        "func": "const earthquakes = msg.payload.features || [];\nconst transformed = [];\n\nfor (let eq of earthquakes) {\n    transformed.push({\n        _id: eq.id,\n        magnitude: eq.properties.mag,\n        location: eq.properties.place,\n        time: new Date(eq.properties.time),\n        depth_km: eq.geometry.coordinates[2],\n        latitude: eq.geometry.coordinates[1],\n        longitude: eq.geometry.coordinates[0],\n        url: eq.properties.url\n    });\n}\n\nmsg.payload = transformed;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 760,
+        "y": 240,
+        "wires": [
+            [
+                "8c73fee1652442e2"
+            ]
+        ]
+    },
+    {
+        "id": "8c73fee1652442e2",
+        "type": "split",
+        "z": "ab603813bf5a0fc1",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "property": "payload",
+        "x": 950,
+        "y": 240,
+        "wires": [
+            [
+                "4bda8f0697c0d63c"
+            ]
+        ]
+    },
+    {
+        "id": "3ee665a225844a3c",
+        "type": "mongodb4",
+        "z": "ab603813bf5a0fc1",
+        "clientNode": "mongo1",
+        "mode": "collection",
+        "collection": "earthquakes",
+        "operation": "updateOne",
+        "output": "toArray",
+        "maxTimeMS": "0",
+        "handleDocId": false,
+        "name": "Save to MongoDB",
+        "x": 1230,
+        "y": 400,
+        "wires": [
+            [
+                "ebfa5e8c28be9512"
+            ]
+        ]
+    },
+    {
+        "id": "4bda8f0697c0d63c",
+        "type": "function",
+        "z": "ab603813bf5a0fc1",
+        "name": "Make document with query",
+        "func": "const data = msg.payload;\n\nmsg.payload = [\n    { _id: data._id }, \n    {                   \n        $setOnInsert: {\n            _id: data._id,\n            magnitude: data.magnitude,\n            location: data.location,\n            time: data.time,\n            depth_km: data.depth_km,\n            latitude: data.latitude,\n            longitude: data.longitude,\n            url: data.url\n        }\n    },\n    { upsert: true }\n];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1180,
+        "y": 240,
+        "wires": [
+            [
+                "3ee665a225844a3c"
+            ]
+        ]
+    },
+    {
+        "id": "dd16097230f5f163",
+        "type": "function",
+        "z": "ab603813bf5a0fc1",
+        "name": "function 1",
+        "func": "const endtime = new Date(Date.now()).toISOString().slice(0, 10)\nmsg.payload ={\n    format: \"geojson\",\n    starttime: \"2000-01-01\",\n    endtime,\n    minlatitude:23,\n    maxlatitude: 37.5,\n    minlongitude: 60.5,\n    maxlongitude: 77.5,\n    minmagnitude: 5.0\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 240,
+        "wires": [
+            [
+                "74bc0a26648c8dab",
+                "ebfa5e8c28be9512"
+            ]
+        ]
+    },
+    {
+        "id": "ebfa5e8c28be9512",
+        "type": "debug",
+        "z": "ab603813bf5a0fc1",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1270,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "9b76fc73d14273e9",
         "type": "global-config",
         "env": [],
         "modules": {

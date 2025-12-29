@@ -1,0 +1,297 @@
+[
+    {
+        "id": "8a9ed4ecbe11ca93",
+        "type": "tab",
+        "label": "Pakistan Earthquakes",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "da26c50b99362c05",
+        "type": "inject",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "Fetch Data",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 240,
+        "wires": [
+            [
+                "e476b148edb46025"
+            ]
+        ]
+    },
+    {
+        "id": "34fbcded2857adba",
+        "type": "http request",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "USGS API",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "query",
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 550,
+        "y": 240,
+        "wires": [
+            [
+                "56a4ecb63369534d",
+                "cc2b76825de97554"
+            ]
+        ]
+    },
+    {
+        "id": "56a4ecb63369534d",
+        "type": "function",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "Transform Data",
+        "func": "const earthquakes = msg.payload.features || [];\nconst transformed = [];\n\nfor (let eq of earthquakes) {\n    transformed.push({\n        _id: eq.id,\n        magnitude: eq.properties.mag,\n        location: eq.properties.place,\n        time: new Date(eq.properties.time),\n        depth_km: eq.geometry.coordinates[2],\n        latitude: eq.geometry.coordinates[1],\n        longitude: eq.geometry.coordinates[0],\n        url: eq.properties.url\n    });\n}\n\nmsg.payload = transformed;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 760,
+        "y": 240,
+        "wires": [
+            [
+                "0220a1c41c6000a0"
+            ]
+        ]
+    },
+    {
+        "id": "0220a1c41c6000a0",
+        "type": "split",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "property": "payload",
+        "x": 950,
+        "y": 240,
+        "wires": [
+            [
+                "76a3fdd4655c64e3"
+            ]
+        ]
+    },
+    {
+        "id": "a6e2a2f40ef28710",
+        "type": "mongodb4",
+        "z": "8a9ed4ecbe11ca93",
+        "clientNode": "mongo1",
+        "mode": "collection",
+        "collection": "earthquakes",
+        "operation": "updateOne",
+        "output": "toArray",
+        "maxTimeMS": "0",
+        "handleDocId": false,
+        "name": "Save to MongoDB",
+        "x": 1510,
+        "y": 240,
+        "wires": [
+            [
+                "cc2b76825de97554"
+            ]
+        ]
+    },
+    {
+        "id": "76a3fdd4655c64e3",
+        "type": "function",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "Make document with query",
+        "func": "const data = msg.payload;\n\nmsg.payload = [\n    { _id: data._id }, \n    {                   \n        $setOnInsert: {\n            _id: data._id,\n            magnitude: data.magnitude,\n            location: data.location,\n            time: data.time,\n            depth_km: data.depth_km,\n            latitude: data.latitude,\n            longitude: data.longitude,\n            url: data.url\n        }\n    },\n    { upsert: true }\n];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1180,
+        "y": 240,
+        "wires": [
+            [
+                "a6e2a2f40ef28710"
+            ]
+        ]
+    },
+    {
+        "id": "e476b148edb46025",
+        "type": "function",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "function 1",
+        "func": "const endtime = new Date(Date.now()).toISOString().slice(0, 10)\nmsg.payload ={\n    format: \"geojson\",\n    starttime: \"2000-01-01\",\n    endtime,\n    minlatitude:23,\n    maxlatitude: 37.5,\n    minlongitude: 60.5,\n    maxlongitude: 77.5,\n    minmagnitude: 5.0\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 240,
+        "wires": [
+            [
+                "34fbcded2857adba",
+                "cc2b76825de97554"
+            ]
+        ]
+    },
+    {
+        "id": "cc2b76825de97554",
+        "type": "debug",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1180,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "92e7121962509c47",
+        "type": "http in",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "Endpoint",
+        "url": "/api/allEarthquakes",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 140,
+        "y": 500,
+        "wires": [
+            [
+                "5f458d288f0778c9"
+            ]
+        ]
+    },
+    {
+        "id": "91e0a6d5d4d713e5",
+        "type": "mongodb4",
+        "z": "8a9ed4ecbe11ca93",
+        "clientNode": "mongo1",
+        "mode": "collection",
+        "collection": "earthquakes",
+        "operation": "find",
+        "output": "toArray",
+        "maxTimeMS": "0",
+        "handleDocId": false,
+        "name": "MongoDB",
+        "x": 560,
+        "y": 500,
+        "wires": [
+            [
+                "822e4a3eb22a1e9a"
+            ]
+        ]
+    },
+    {
+        "id": "f4365d8178acc06f",
+        "type": "http response",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "Response",
+        "statusCode": "",
+        "headers": {},
+        "x": 1020,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "822e4a3eb22a1e9a",
+        "type": "function",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "format response",
+        "func": "   msg.statusCode = 200;\n   msg.headers = {\n       'Content-Type': 'application/json',\n       'Access-Control-Allow-Origin': '*'\n   };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 500,
+        "wires": [
+            [
+                "f4365d8178acc06f"
+            ]
+        ]
+    },
+    {
+        "id": "5f458d288f0778c9",
+        "type": "function",
+        "z": "8a9ed4ecbe11ca93",
+        "name": "request",
+        "func": "msg.payload = [\n    {}\n]\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 500,
+        "wires": [
+            [
+                "91e0a6d5d4d713e5"
+            ]
+        ]
+    },
+    {
+        "id": "mongo1",
+        "type": "mongodb4-client",
+        "name": "MongoDB Atlas",
+        "protocol": "mongodb+srv",
+        "hostname": "",
+        "port": "",
+        "dbName": "",
+        "appName": "",
+        "authSource": "",
+        "authMechanism": "DEFAULT",
+        "tls": false,
+        "tlsCAFile": "",
+        "tlsCertificateKeyFile": "",
+        "tlsInsecure": false,
+        "connectTimeoutMS": "",
+        "socketTimeoutMS": "",
+        "minPoolSize": "",
+        "maxPoolSize": "",
+        "maxIdleTimeMS": "",
+        "uri": "mongodb+srv://artariqdev_db_user:bzVAE4JSjAEPUN0g@psifi.mc6xmgg.mongodb.net/?appName=psifi",
+        "advanced": "",
+        "uriTabActive": "tab-uri-advanced"
+    },
+    {
+        "id": "ecf14b831f707ce9",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-mongodb4": "3.3.0"
+        }
+    }
+]

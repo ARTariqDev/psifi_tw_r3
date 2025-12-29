@@ -1,0 +1,66 @@
+remotecfg {
+	url            = "https://fleet-management-prod-018.grafana.net"
+	id             = "Tariqs-MacBook-Air"
+	poll_frequency = "60s"
+
+	basic_auth {
+		username = "1480992"
+		password = sys.env("GCLOUD_RW_API_KEY")
+	}
+}
+
+prometheus.remote_write "metrics_service" {
+	endpoint {
+		url = "https://prometheus-prod-43-prod-ap-south-1.grafana.net/api/prom/push"
+
+		basic_auth {
+			username = "2886217"
+			password = sys.env("GCLOUD_RW_API_KEY")
+		}
+	}
+}
+
+loki.write "grafana_cloud_loki" {
+	endpoint {
+		url = "https://logs-prod-028.grafana.net/loki/api/v1/push"
+
+		basic_auth {
+			username = "1438785"
+			password = sys.env("GCLOUD_RW_API_KEY")
+		}
+	}
+}
+// MongoDB Atlas Integration
+discovery.http "metrics_integrations_integrations_mongodb_atlas" {
+	basic_auth {
+		username = "<prom_username>"
+		password = "<prom_password>"
+	}
+	follow_redirects = true
+	enable_http2     = true
+	refresh_interval = "1m0s"
+	url              = "https://cloud.mongodb.com/prometheus/v1.0/groups/<group_id>/discovery"
+}
+
+prometheus.scrape "metrics_integrations_integrations_mongodb_atlas" {
+	targets         = discovery.http.metrics_integrations_integrations_mongodb_atlas.targets
+	forward_to      = [prometheus.relabel.metrics_integrations_integrations_mongodb_atlas.receiver]
+	job_name        = "integrations/mongodb-atlas"
+	scrape_interval = "10s"
+	scheme          = "https"
+
+	basic_auth {
+		username = "<prom_username>"
+		password = "<prom_password>"
+	}
+}
+
+prometheus.relabel "metrics_integrations_integrations_mongodb_atlas" {
+	forward_to = [prometheus.remote_write.metrics_service.receiver]
+
+	rule {
+		source_labels = ["__name__"]
+		regex         = "up|hardware_disk_metrics_disk_space_free_bytes|hardware_disk_metrics_disk_space_used_bytes|hardware_disk_metrics_read_count|hardware_disk_metrics_read_time_milliseconds|hardware_disk_metrics_write_count|hardware_disk_metrics_write_time_milliseconds|hardware_system_cpu_irq_milliseconds|mongodb_connections_active|mongodb_connections_current|mongodb_connections_totalCreated|mongodb_electionMetrics_averageCatchUpOps|mongodb_electionMetrics_catchUpTakeover_called|mongodb_electionMetrics_catchUpTakeover_successful|mongodb_electionMetrics_electionTimeout_called|mongodb_electionMetrics_electionTimeout_successful|mongodb_electionMetrics_numCatchUps|mongodb_electionMetrics_numCatchUpsFailedWithError|mongodb_electionMetrics_numCatchUpsSkipped|mongodb_electionMetrics_numCatchUpsSucceeded|mongodb_electionMetrics_numCatchUpsTimedOut|mongodb_electionMetrics_priorityTakeover_called|mongodb_electionMetrics_priorityTakeover_successful|mongodb_electionMetrics_stepUpCmd_called|mongodb_electionMetrics_stepUpCmd_successful|mongodb_globalLock_activeClients_readers|mongodb_globalLock_activeClients_writers|mongodb_globalLock_currentQueue_readers|mongodb_globalLock_currentQueue_writers|mongodb_locks_Collection_acquireWaitCount_R|mongodb_locks_Collection_acquireWaitCount_W|mongodb_locks_Collection_acquireWaitCount_r|mongodb_locks_Collection_acquireWaitCount_w|mongodb_locks_Collection_deadlockCount_R|mongodb_locks_Collection_deadlockCount_W|mongodb_locks_Collection_deadlockCount_r|mongodb_locks_Collection_deadlockCount_w|mongodb_locks_Collection_timeAcquiringMicros_R|mongodb_locks_Collection_timeAcquiringMicros_W|mongodb_locks_Collection_timeAcquiringMicros_r|mongodb_locks_Collection_timeAcquiringMicros_w|mongodb_locks_Database_acquireWaitCount_R|mongodb_locks_Database_acquireWaitCount_W|mongodb_locks_Database_acquireWaitCount_r|mongodb_locks_Database_acquireWaitCount_w|mongodb_locks_Database_deadlockCount_R|mongodb_locks_Database_deadlockCount_W|mongodb_locks_Database_deadlockCount_r|mongodb_locks_Database_deadlockCount_w|mongodb_locks_Database_timeAcquiringMicros_R|mongodb_locks_Database_timeAcquiringMicros_W|mongodb_locks_Database_timeAcquiringMicros_r|mongodb_locks_Database_timeAcquiringMicros_w|mongodb_mem_resident|mongodb_mem_virtual|mongodb_network_bytesIn|mongodb_network_bytesOut|mongodb_network_numRequests|mongodb_network_numSlowDNSOperations|mongodb_network_numSlowSSLOperations|mongodb_opLatencies_reads_latency|mongodb_opLatencies_reads_ops|mongodb_opLatencies_writes_latency|mongodb_opLatencies_writes_ops|mongodb_opcounters_delete|mongodb_opcounters_insert|mongodb_opcounters_query|mongodb_opcounters_update"
+		action        = "keep"
+	}
+}
